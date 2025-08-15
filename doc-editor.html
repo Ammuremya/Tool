@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Free online document editor with PDF, Word, PPT conversion and compression tools. Edit, convert, and optimize documents easily.">
+    <title>DocEditor Pro - Edit, Convert & Compress Documents Online</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- jsPDF for PDF conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --accent: #f72585;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #ef233c;
+            --border-radius: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background-color: white;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 25px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: var(--transition);
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+        }
+
+        nav ul li a:hover {
+            color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: white;
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        /* Editor Container */
+        .editor-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tool-group {
+            display: flex;
+            gap: 6px;
+            padding-right: 12px;
+            margin-right: 12px;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .tool-group:last-child {
+            border-right: none;
+            margin-right: 0;
+        }
+
+        .tool-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: none;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--gray);
+        }
+
+        .tool-btn:hover {
+            background-color: #e9ecef;
+            color: var(--primary);
+        }
+
+        .tool-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        select.tool-btn {
+            width: auto;
+            padding: 0 10px;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 16px;
+        }
+
+        /* Document Editor */
+        #document-editor {
+            width: 100%;
+            min-height: 600px;
+            padding: 30px;
+            font-size: 16px;
+            line-height: 1.8;
+            outline: none;
+            resize: vertical;
+        }
+
+        #document-editor:empty:before {
+            content: attr(data-placeholder);
+            color: var(--gray);
+            opacity: 0.6;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .sidebar-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+        }
+
+        .sidebar-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-card h3 i {
+            color: var(--accent);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .radio-option, .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radio-option input, .checkbox-option input {
+            width: 16px;
+            height: 16px;
+        }
+
+        .radio-option label, .checkbox-option label {
+            margin-bottom: 0;
+            font-weight: 400;
+        }
+
+        .range-slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e9ecef;
+            border-radius: 4px;
+            outline: none;
+            margin: 15px 0;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .btn-accent {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-accent:hover {
+            background-color: #d91a6a;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(248, 37, 133, 0.2);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #3ab0d5;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(76, 201, 240, 0.2);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #df8515;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(248, 150, 30, 0.2);
+        }
+
+        /* Ad Container */
+        .ad-container {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 1px dashed #dee2e6;
+        }
+
+        .ad-label {
+            font-size: 0.7rem;
+            color: var(--gray);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background-color: var(--dark);
+            color: white;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 3px;
+            background-color: var(--accent);
+        }
+
+        .footer-section p {
+            opacity: 0.8;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-section ul li a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+
+        .footer-section ul li a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            transition: var(--transition);
+        }
+
+        .social-icons a:hover {
+            background-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                grid-row: 1;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            
+            .ad-container {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            nav ul {
+                margin-top: 15px;
+                justify-content: center;
+            }
+            
+            nav ul li {
+                margin: 0 10px;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 250px;
+            }
+            
+            .toolbar {
+                justify-content: center;
+            }
+            
+            .tool-group {
+                margin-right: 8px;
+                padding-right: 8px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            nav {
+                display: none;
+                width: 100%;
+                margin-top: 15px;
+            }
+            
+            nav.active {
+                display: block;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            nav ul li {
+                margin: 0;
+            }
+            
+            .hero {
+                padding: 60px 0;
+            }
+            
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .sidebar {
+                grid-template-columns: 1fr;
+            }
+            
+            .ad-container {
+                grid-column: span 1;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <i class="fas fa-file-alt"></i>
+                    DocEditor Pro
+                </a>
+                
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <nav id="mainNav">
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Templates</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Powerful Online Document Editor</h1>
+            <p>Create, edit, convert and compress documents in various formats with our all-in-one online editor. No installation required.</p>
+            <div class="cta-buttons">
+                <a href="#editor" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Start Editing
+                </a>
+                <a href="#" class="btn btn-outline">
+                    <i class="fas fa-video"></i> Watch Demo
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content" id="editor">
+            <!-- Editor Container -->
+            <div class="editor-container">
+                <!-- Ad Container (Top) -->
+                <div class="ad-container">
+                    <div class="ad-label">Advertisement</div>
+                    <!-- Google AdSense Ad Unit -->
+                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADSENSE_ID"></script>
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-YOUR_ADSENSE_ID"
+                         data-ad-slot="YOUR_AD_SLOT_ID"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>
+                         (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+                
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="tool-group">
+                        <button class="tool-btn" data-command="bold" title="Bold"><i class="fas fa-bold"></i></button>
+                        <button class="tool-btn" data-command="italic" title="Italic"><i class="fas fa-italic"></i></button>
+                        <button class="tool-btn" data-command="underline" title="Underline"><i class="fas fa-underline"></i></button>
+                        <button class="tool-btn" data-command="strikeThrough" title="Strikethrough"><i class="fas fa-strikethrough"></i></button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <select class="tool-btn" id="font-family" title="Font Family">
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Verdana">Verdana</option>
+                        </select>
+                        <select class="tool-btn" id="font-size" title="Font Size">
+                            <option value="1">8px</option>
+                            <option value="2">10px</option>
+                            <option value="3">12px</option>
+                            <option value="4" selected>14px</option>
+                            <option value="5">16px</option>
+                            <option value="6">18px</option>
+                            <option value="7">24px</option>
+                        </select>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" data-command="justifyLeft" title="Align Left"><i class="fas fa-align-left"></i></button>
+                        <button class="tool-btn" data-command="justifyCenter" title="Align Center"><i class="fas fa-align-center"></i></button>
+                        <button class="tool-btn" data-command="justifyRight" title="Align Right"><i class="fas fa-align-right"></i></button>
+                        <button class="tool-btn" data-command="justifyFull" title="Justify"><i class="fas fa-align-justify"></i></button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" data-command="insertUnorderedList" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+                        <button class="tool-btn" data-command="insertOrderedList" title="Numbered List"><i class="fas fa-list-ol"></i></button>
+                        <button class="tool-btn" data-command="indent" title="Indent"><i class="fas fa-indent"></i></button>
+                        <button class="tool-btn" data-command="outdent" title="Outdent"><i class="fas fa-outdent"></i></button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" id="text-color" title="Text Color"><i class="fas fa-font"></i></button>
+                        <button class="tool-btn" id="highlight-color" title="Highlight Color"><i class="fas fa-highlighter"></i></button>
+                        <button class="tool-btn" data-command="removeFormat" title="Clear Formatting"><i class="fas fa-eraser"></i></button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" data-command="undo" title="Undo"><i class="fas fa-undo"></i></button>
+                        <button class="tool-btn" data-command="redo" title="Redo"><i class="fas fa-redo"></i></button>
+                    </div>
+                </div>
+                
+                <!-- Document Editor -->
+                <div id="document-editor" contenteditable="true" data-placeholder="Start typing or paste your document here...">
+                    <h1>Welcome to DocEditor Pro</h1>
+                    <p>This is a fully responsive online document editor that allows you to create, edit, and format your documents. You can:</p>
+                    <ul>
+                        <li>Apply different text styles and formatting</li>
+                        <li>Convert documents to PDF, Word, or PowerPoint</li>
+                        <li>Compress files to reduce their size</li>
+                        <li>Optimize documents for better performance</li>
+                    </ul>
+                    <p>Try editing this text or start with a new document!</p>
+                </div>
+                
+                <!-- Status Bar -->
+                <div class="status-bar">
+                    <div class="word-count">Words: 0</div>
+                    <div class="char-count">Characters: 0</div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- File Operations Card -->
+                <div class="sidebar-card">
+                    <h3><i class="fas fa-file"></i> File Operations</h3>
+                    <div class="form-group">
+                        <button id="new-doc" class="btn btn-block">
+                            <i class="fas fa-file"></i> New Document
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <button id="open-file" class="btn btn-block">
+                            <i class="fas fa-folder-open"></i> Open File
+                        </button>
+                        <input type="file" id="file-input" style="display: none;" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.html">
+                    </div>
+                    <div class="form-group">
+                        <button id="save-file" class="btn btn-block">
+                            <i class="fas fa-save"></i> Save Document
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Convert Format Card -->
+                <div class="sidebar-card">
+                    <h3><i class="fas fa-exchange-alt"></i> Convert To</h3>
+                    <div class="form-group">
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="format" value="pdf" checked>
+                                <span>PDF Document</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="format" value="docx">
+                                <span>Microsoft Word (.docx)</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="format" value="pptx">
+                                <span>PowerPoint (.pptx)</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="format" value="txt">
+                                <span>Plain Text (.txt)</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="format" value="rtf">
+                                <span>Rich Text Format (.rtf)</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="format" value="odt">
+                                <span>OpenDocument Text (.odt)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button id="convert-btn" class="btn btn-block btn-accent">
+                        <i class="fas fa-exchange-alt"></i> Convert Document
+                    </button>
+                </div>
+                
+                <!-- Compression Card -->
+                <div class="sidebar-card">
+                    <h3><i class="fas fa-compress-alt"></i> Compress Document</h3>
+                    <div class="form-group">
+                        <label>Compression Level</label>
+                        <input type="range" min="1" max="10" value="5" class="range-slider" id="compression-level">
+                        <div class="range-labels">
+                            <span>Low</span>
+                            <span>Medium</span>
+                            <span>High</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <p>Estimated size reduction: <strong id="size-reduction">30-50%</strong></p>
+                    </div>
+                    <button id="compress-btn" class="btn btn-block btn-success">
+                        <i class="fas fa-compress-alt"></i> Compress Now
+                    </button>
+                </div>
+                
+                <!-- Optimization Card -->
+                <div class="sidebar-card">
+                    <h3><i class="fas fa-magic"></i> Optimize Document</h3>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="optimize" value="images" checked>
+                                <span>Optimize Images</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="optimize" value="fonts">
+                                <span>Remove Unused Fonts</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="optimize" value="metadata">
+                                <span>Remove Metadata</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="optimize" value="minify">
+                                <span>Minify Content</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button id="optimize-btn" class="btn btn-block btn-warning">
+                        <i class="fas fa-magic"></i> Optimize Now
+                    </button>
+                </div>
+                
+                <!-- Ad Container (Sidebar Bottom) -->
+                <div class="ad-container">
+                    <div class="ad-label">Advertisement</div>
+                    <!-- Google AdSense Ad Unit -->
+                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADSENSE_ID"></script>
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-YOUR_ADSENSE_ID"
+                         data-ad-slot="YOUR_AD_SLOT_ID"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>
+                         (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conversion Modal -->
+    <div class="modal" id="conversion-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Converting Document</h3>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="conversion-progress">
+                    <p>Your document is being converted. Please wait...</p>
+                    <div class="progress-bar" style="height: 10px; background: #e9ecef; border-radius: 5px; margin-top: 15px;">
+                        <div id="progress" style="height: 100%; width: 0%; background: var(--primary); border-radius: 5px; transition: width 0.3s;"></div>
+                    </div>
+                    <p id="progress-text" style="text-align: center; margin-top: 10px;">0% complete</p>
+                </div>
+                <div id="conversion-result" style="display: none; text-align: center;">
+                    <i class="fas fa-check-circle" style="font-size: 50px; color: var(--success); margin-bottom: 20px;"></i>
+                    <h3>Conversion Complete!</h3>
+                    <p>Your document has been successfully converted.</p>
+                    <button id="download-btn" class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-download"></i> Download Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About DocEditor</h3>
+                    <p>A powerful online document editor that helps you create, edit, convert and compress documents in various formats.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Templates</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Community Forum</a></li>
+                        <li><a href="#">Status</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Legal</h3>
+                    <ul>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                        <li><a href="#">GDPR Compliance</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2023 DocEditor Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        // Mobile Menu Toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            document.getElementById('mainNav').classList.toggle('active');
+        });
+        
+        // Text Editor Functionality
+        const editor = document.getElementById('document-editor');
+        const toolbarButtons = document.querySelectorAll('.tool-btn[data-command]');
+        
+        // Update word and character count
+        function updateCounts() {
+            const text = editor.innerText || '';
+            const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const charCount = text.length;
+            
+            document.querySelector('.word-count').textContent = `Words: ${wordCount}`;
+            document.querySelector('.char-count').textContent = `Characters: ${charCount}`;
+        }
+        
+        editor.addEventListener('input', updateCounts);
+        updateCounts();
+        
+        // Apply toolbar commands
+        toolbarButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const command = this.getAttribute('data-command');
+                
+                if (command === 'createLink' || command === 'insertImage') {
+                    let url = prompt('Enter the link here: ', 'http://');
+                    document.execCommand(command, false, url);
+                } else {
+                    document.execCommand(command, false, null);
+                }
+                
+                // Update active state for alignment buttons
+                if (command.startsWith('justify')) {
+                    document.querySelectorAll('.tool-btn[data-command^="justify"]').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                }
+            });
+        });
+        
+        // Font Family and Size
+        document.getElementById('font-family').addEventListener('change', function() {
+            document.execCommand('fontName', false, this.value);
+        });
+        
+        document.getElementById('font-size').addEventListener('change', function() {
+            document.execCommand('fontSize', false, this.value);
+        });
+        
+        // Text Color
+        document.getElementById('text-color').addEventListener('click', function() {
+            const color = prompt('Enter a color name or hex value (e.g., red or #ff0000):');
+            if (color) {
+                document.execCommand('foreColor', false, color);
+            }
+        });
+        
+        // Highlight Color
+        document.getElementById('highlight-color').addEventListener('click', function() {
+            const color = prompt('Enter a highlight color name or hex value:');
+            if (color) {
+                document.execCommand('hiliteColor', false, color);
+            }
+        });
+        
+        // File Operations
+        document.getElementById('new-doc').addEventListener('click', function() {
+            if (confirm('Are you sure you want to create a new document? Any unsaved changes will be lost.')) {
+                editor.innerHTML = '<h1>New Document</h1><p>Start editing your document here.</p>';
+                updateCounts();
+            }
+        });
+        
+        document.getElementById('open-file').addEventListener('click', function() {
+            document.getElementById('file-input').click();
+        });
+        
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // Check file type
+                if (file.type === 'application/pdf') {
+                    alert('PDF files can only be viewed, not edited directly. Please convert to Word format first.');
+                } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+                           file.type === 'application/msword') {
+                    alert('Word documents need to be converted to HTML for editing. In a full implementation, we would use a library like mammoth.js to convert DOCX to HTML.');
+                } else if (file.type === 'text/html' || file.type === 'text/plain' || file.type === 'application/rtf') {
+                    editor.innerHTML = e.target.result;
+                    updateCounts();
+                } else {
+                    alert('Unsupported file type. Please use HTML, TXT, or RTF files for direct editing.');
+                }
+            };
+            
+            if (file.type === 'application/pdf') {
+                reader.readAsDataURL(file);
+            } else {
+                reader.readAsText(file);
+            }
+        });
+        
+        // Save file
+        document.getElementById('save-file').addEventListener('click', function() {
+            const content = editor.innerHTML;
+            const blob = new Blob([content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'document.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+        
+        // Document Conversion
+        const conversionModal = document.getElementById('conversion-modal');
+        const closeModal = document.getElementById('close-modal');
+        const progressBar = document.getElementById('progress');
+        const progressText = document.getElementById('progress-text');
+        const conversionProgress = document.getElementById('conversion-progress');
+        const conversionResult = document.getElementById('conversion-result');
+        const downloadBtn = document.getElementById('download-btn');
+        const modalTitle = document.getElementById('modal-title');
+        
+        let convertedFileUrl = null;
+        
+        closeModal.addEventListener('click', function() {
+            conversionModal.style.display = 'none';
+        });
+        
+        window.addEventListener('click', function(e) {
+            if (e.target === conversionModal) {
+                conversionModal.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('convert-btn').addEventListener('click', function() {
+            const selectedFormat = document.querySelector('input[name="format"]:checked').value;
+            const content = editor.innerHTML;
+            const textContent = editor.innerText;
+            
+            // Show modal
+            conversionModal.style.display = 'flex';
+            conversionProgress.style.display = 'block';
+            conversionResult.style.display = 'none';
+            modalTitle.textContent = `Converting to ${selectedFormat.toUpperCase()}`;
+            
+            // Reset progress
+            progressBar.style.width = '0%';
+            progressText.textContent = '0% complete';
+            
+            // Simulate conversion progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `${progress}% complete`;
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    
+                    // Process conversion based on format
+                    setTimeout(() => {
+                        convertDocument(content, textContent, selectedFormat);
+                    }, 500);
+                }
+            }, 100);
+        });
+        
+        function convertDocument(content, textContent, format) {
+            let blob, fileName, mimeType;
+            
+            switch(format) {
+                case 'pdf':
+                    // Use jsPDF to create PDF
+                    const doc = new jsPDF();
+                    
+                    // Add text content
+                    doc.text(textContent, 10, 10);
+                    
+                    // For better PDF generation with styles, we would use html2canvas
+                    html2canvas(editor).then(canvas => {
+                        const imgData = canvas.toDataURL('image/png');
+                        const pdf = new jsPDF();
+                        pdf.addImage(imgData, 'PNG', 0, 0);
+                        
+                        // Create download link
+                        const pdfBlob = pdf.output('blob');
+                        convertedFileUrl = URL.createObjectURL(pdfBlob);
+                        
+                        // Show result
+                        conversionProgress.style.display = 'none';
+                        conversionResult.style.display = 'block';
+                        downloadBtn.onclick = function() {
+                            const a = document.createElement('a');
+                            a.href = convertedFileUrl;
+                            a.download = 'document.pdf';
+                            a.click();
+                        };
+                    });
+                    return;
+                    
+                case 'docx':
+                    // In a real implementation, we would use a library like docx or mammoth.js
+                    // This is a simplified version that creates an HTML file with .docx extension
+                    fileName = 'document.docx';
+                    mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+                    blob = new Blob([content], { type: 'text/html' }); // Should be converted to actual DOCX
+                    break;
+                    
+                case 'pptx':
+                    // In a real implementation, we would use a library like pptxgenjs
+                    fileName = 'document.pptx';
+                    mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+                    blob = new Blob([content], { type: 'text/html' }); // Should be converted to actual PPTX
+                    break;
+                    
+                case 'txt':
+                    fileName = 'document.txt';
+                    mimeType = 'text/plain';
+                    blob = new Blob([textContent], { type: 'text/plain' });
+                    break;
+                    
+                case 'rtf':
+                    fileName = 'document.rtf';
+                    mimeType = 'application/rtf';
+                    // Simple RTF wrapper - in real implementation use a proper RTF converter
+                    const rtfContent = `{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1033{\\fonttbl{\\f0\\fnil\\fcharset0 Calibri;}}\n{\\*\\generator Riched20 10.0.19041}\\viewkind4\\uc1 \n\\pard\\sa200\\sl276\\slmult1\\f0\\fs22\\lang9 ${textContent.replace(/\n/g, '\\par ')}\n\\par}`;
+                    blob = new Blob([rtfContent], { type: 'application/rtf' });
+                    break;
+                    
+                case 'odt':
+                    fileName = 'document.odt';
+                    mimeType = 'application/vnd.oasis.opendocument.text';
+                    // Simple ODT wrapper - in real implementation use a proper ODT converter
+                    const odtContent = `<?xml version="1.0" encoding="UTF-8"?>
+<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0">
+<office:body><office:text><text:p>${textContent}</text:p></office:text></office:body>
+</office:document-content>`;
+                    blob = new Blob([odtContent], { type: 'application/vnd.oasis.opendocument.text' });
+                    break;
+                    
+                default:
+                    fileName = 'document.html';
+                    mimeType = 'text/html';
+                    blob = new Blob([content], { type: 'text/html' });
+            }
+            
+            // Create download URL
+            convertedFileUrl = URL.createObjectURL(blob);
+            
+            // Show result
+            conversionProgress.style.display = 'none';
+            conversionResult.style.display = 'block';
+            downloadBtn.onclick = function() {
+                const a = document.createElement('a');
+                a.href = convertedFileUrl;
+                a.download = fileName;
+                a.click();
+            };
+        }
+        
+        // Document Compression
+        document.getElementById('compression-level').addEventListener('input', function() {
+            const level = parseInt(this.value);
+            let reduction;
+            
+            if (level < 4) {
+                reduction = '10-20%';
+            } else if (level < 7) {
+                reduction = '30-50%';
+            } else {
+                reduction = '60-80%';
+            }
+            
+            document.getElementById('size-reduction').textContent = reduction;
+        });
+        
+        document.getElementById('compress-btn').addEventListener('click', function() {
+            const level = document.getElementById('compression-level').value;
+            alert(`Document compression at level ${level} would be processed here. In a real implementation, this would optimize images, remove metadata, etc.`);
+        });
+        
+        // Document Optimization
+        document.getElementById('optimize-btn').addEventListener('click', function() {
+            const options = [];
+            document.querySelectorAll('input[name="optimize"]:checked').forEach(checkbox => {
+                options.push(checkbox.value);
+            });
+            
+            if (options.length === 0) {
+                alert('Please select at least one optimization option.');
+                return;
+            }
+            
+            alert(`Document will be optimized with the following options: ${options.join(', ')}. In a real implementation, this would process the document accordingly.`);
+        });
+        
+        // Initialize AdSense
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+</body>
+</html>
